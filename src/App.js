@@ -1,23 +1,20 @@
-import logo from './logo.svg';
-import './App.css';
+import {
+  Routes,
+  Route,
+} from "react-router-dom";
+import QuizScreen from "./view/Quiz/index.jsx";
+import HomeScreen from "./view/Homescreen/index.jsx"
+import CreateQuizForm from "./components/dashboard/createQuizForm.jsx";
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Routes>
+        <Route path="/" element={<HomeScreen />} />
+        <Route path="/create-quiz" element={<CreateQuizForm />} />
+        <Route path="/view/:id" element={<QuizScreen />} />
+        {/* <Route path="invoices" element={<Invoices />} /> */}
+      </Routes>
     </div>
   );
 }
