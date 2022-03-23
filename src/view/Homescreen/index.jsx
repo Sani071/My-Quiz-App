@@ -1,6 +1,6 @@
-import React from 'react';
+import React from "react";
 // import { Button } from 'reactstrap';
-import MyQuizList from '../../components/dashboard/myQuizList';
+import MyQuizList from "../../components/dashboard/myQuizList";
 
 export default function Homepage() {
     return (

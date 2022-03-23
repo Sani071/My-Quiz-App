@@ -2,7 +2,7 @@
     {
         "id": 1,
         "title": "What is css",
-        "isMultiSelectable": false,
+        "isMultiChoice": false,
         "correctOption": 2,
         "options": [
             {
@@ -22,7 +22,7 @@
     {
         "id": 2,
         "title": "What is React",
-        "isMultiSelectable": false,
+        "isMultiChoice": false,
         "correctOption": 3,
         "options": [
             {
@@ -42,7 +42,7 @@
     {
         "id": 3,
         "title": "What is Javascript",
-        "isMultiSelectable": true,
+        "isMultiChoice": true,
         "correctOption": [
             2,
             4
