@@ -38,9 +38,12 @@ export default function CreateQuizForm() {
     };
 
     useEffect(() => {
+
         if (isMultiChoice && !Array.isArray(correctOption)) {
-            setCorrectOption([correctOption]);
-        } else if (!isMultiChoice && Array.isArray(correctOption)) {
+            setCorrectOption(correctOption ? [correctOption] : []);
+        }
+
+        else if (!isMultiChoice && Array.isArray(correctOption) && correctOption.length) {
             setCorrectOption(correctOption?.pop());
         }
     }, [isMultiChoice, correctOption]);
@@ -72,8 +75,12 @@ export default function CreateQuizForm() {
     };
 
     useEffect(() => {
-        if (quizTitle && quizOptions.length > 1 && correctOption) {
-            setIsFormValid(true);
+        if (quizTitle && quizOptions.length > 1) {
+            if (Array.isArray(correctOption) && correctOption.length) {
+                setIsFormValid(true);
+            } else if (!Array.isArray(correctOption) && correctOption) {
+                setIsFormValid(true);
+            }
         } else {
             setIsFormValid(false);
         }
@@ -82,7 +89,7 @@ export default function CreateQuizForm() {
     return (
         <>
             <div className="text-end">
-                <Link to="/"><Button className="btn-primary">Go Dashboard</Button></Link>
+                <Link to="/dashboard"><Button className="btn-primary">Go Dashboard</Button></Link>
             </div>
             <h4 className="text-center">Create Quiz</h4>
             {/* <hr /> */}
@@ -101,7 +108,7 @@ export default function CreateQuizForm() {
             <FormGroup>
                 <Label htmlFor="optionTitle">Option {quizOptions.length + 1}</Label>
                 <Input
-                    placeholder="Option title"
+                    placeholder="Press Enter to add"
                     id="optionTitle"
                     name="optionTitle"
                     value={quizOption}

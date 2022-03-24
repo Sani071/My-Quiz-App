@@ -1,14 +1,15 @@
 import React from "react";
-// import { Button } from 'reactstrap';
-import MyQuizList from "../../components/dashboard/myQuizList";
+import { Link } from "react-router-dom";
+import { Button } from "reactstrap";
 
 export default function Homepage() {
     return (
         <>
-
-            <div>
-                <MyQuizList />
-                {/* <Button>Create New</Button> */}
+            <div className="text-center homeCard">
+                <div className="homeCard-action-buttons">
+                    <Link to="/dashboard"><Button color="primary">Dashboard</Button></Link>
+                    <Link to="/play-quiz"><Button className="ms-3" color="success">Play Quiz</Button></Link>
+                </div>
             </div>
         </>
     );

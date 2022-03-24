@@ -1,4 +1,5 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
+import { addQuiz, getQuiz } from "../DB/useQuizIDB";
 
 // Create two context:
 // QuizContext: to query the context state
@@ -12,7 +13,13 @@ function QuizProvider({ children }) {
     const [quizList, setQuizList] = useState([]);
     const setQuizHandler = (quiz) => {
         setQuizList([quiz, ...quizList]);
+        addQuiz(quiz);
     };
+
+    useEffect(() => {
+        getQuiz(data => setQuizList(data));
+
+    }, []);
 
     return (
         <QuizContext.Provider value={quizList}>
