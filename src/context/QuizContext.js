@@ -1,5 +1,5 @@
 import React, { createContext, useEffect, useState } from "react";
-import { addQuiz, getQuiz } from "../DB/useQuizIDB";
+import { getQuiz, setQuiz, setQuestion, getQuestionByQuizId } from "../DB/useQuizIDB";
 
 // Create two context:
 // QuizContext: to query the context state
@@ -11,19 +11,28 @@ const QuizDispatchContext = createContext(undefined);
 // components that needs the state in this context
 function QuizProvider({ children }) {
     const [quizList, setQuizList] = useState([]);
-    const setQuizHandler = (quiz) => {
-        setQuizList([quiz, ...quizList]);
-        addQuiz(quiz);
+    const [questionList, setQuestionList] = useState([]);
+
+    const setQuizHandler = (question, quiz) => {
+        if (quiz) {
+            setQuizList([quiz, ...quizList]);
+            setQuiz(quiz);
+        }
+        setQuestion(question);
     };
 
-    useEffect(() => {
-        getQuiz(data => setQuizList(data));
+    const getQuestionByQuiz = quizId => {
+        getQuestionByQuizId(quizId, setQuestionList);
+    };
 
+
+    useEffect(() => {
+        getQuiz(quiz => setQuizList(quiz));
     }, []);
 
     return (
-        <QuizContext.Provider value={quizList}>
-            <QuizDispatchContext.Provider value={setQuizHandler}>
+        <QuizContext.Provider value={{ quizList, questionList }}>
+            <QuizDispatchContext.Provider value={{ setQuizHandler, getQuestionByQuiz }}>
                 {children}
             </QuizDispatchContext.Provider>
         </QuizContext.Provider>

@@ -3,30 +3,33 @@ import { Link } from "react-router-dom";
 import {
     Button, FormGroup, Input, Label, ListGroup, ListGroupItem,
 } from "reactstrap";
-import { QuizDispatchContext } from "../../context/QuizContext";
+import { QuizContext, QuizDispatchContext } from "../../context/QuizContext";
 import { genUniqId } from "../../helper";
 import MyQuizList from "./myQuizList";
 
 export default function CreateQuizForm() {
-    const setQuiz = useContext(QuizDispatchContext);
+    const { setQuizHandler } = useContext(QuizDispatchContext);
+    const { quizList } = useContext(QuizContext);
 
     const [quizTitle, setQuizTitle] = useState("");
-    const [quizOptions, setQuizOptions] = useState([]);
-    const [quizOption, setQuizOption] = useState("");
+    const [quizId, setQuizId] = useState("");
+    const [questionTitle, setQuestionTitle] = useState("");
+    const [options, setOptions] = useState([]);
+    const [option, setOption] = useState("");
     const [correctOption, setCorrectOption] = useState();
     const [isFormValid, setIsFormValid] = useState(false);
 
     const [isMultiChoice, setIsMultiChoice] = useState(false);
 
-    const handleQuizOptionSet = (event) => {
+    const handleOptionSet = (event) => {
         if (event.key === "Enter" && event.target.value) {
             const option = {
                 title: event.target.value,
                 id: genUniqId(),
             };
 
-            setQuizOptions([option, ...quizOptions]);
-            setQuizOption("");
+            setOptions([option, ...options]);
+            setOption("");
         }
     };
     const onCorrectOptionSelect = (optionId) => {
@@ -35,6 +38,11 @@ export default function CreateQuizForm() {
         } else {
             setCorrectOption(optionId);
         }
+    };
+
+    const quizSelectionHandler = (e) => {
+        setQuizId(e.target.value);
+        setQuizTitle("");
     };
 
     useEffect(() => {
@@ -50,8 +58,9 @@ export default function CreateQuizForm() {
 
     const resetFrom = () => {
         setQuizTitle("");
-        setQuizOptions([]);
-        setQuizOption("");
+        setQuestionTitle("");
+        setOptions([]);
+        setOption("");
         setCorrectOption();
         setIsFormValid(false);
         setIsMultiChoice(false);
@@ -59,15 +68,24 @@ export default function CreateQuizForm() {
 
     const createQuiz = () => {
         if (isFormValid) {
-            const quiz = {
+            let quiz = null;
+            if (quizTitle) {
+                quiz = {
+                    id: genUniqId(),
+                    title: quizTitle
+                };
+            }
+
+            const question = {
                 id: genUniqId(),
+                quizId: quiz?.id || quizId,
                 correctOption,
-                title: quizTitle,
+                title: questionTitle,
                 isMultiChoice,
-                options: quizOptions,
+                options,
 
             };
-            setQuiz(quiz);
+            setQuizHandler(question, quiz?.id ? quiz : null);
             resetFrom();
         } else {
             alert("Please provide required data for the quiz");
@@ -75,16 +93,19 @@ export default function CreateQuizForm() {
     };
 
     useEffect(() => {
-        if (quizTitle && quizOptions.length > 1) {
+
+        if ((quizTitle || quizId) && questionTitle && options.length > 1) {
             if (Array.isArray(correctOption) && correctOption.length) {
                 setIsFormValid(true);
             } else if (!Array.isArray(correctOption) && correctOption) {
                 setIsFormValid(true);
+            } else {
+                setIsFormValid(false);
             }
         } else {
             setIsFormValid(false);
         }
-    }, [quizTitle, quizOptions, correctOption]);
+    }, [questionTitle, quizId, quizTitle, options, correctOption]);
 
     return (
         <>
@@ -92,33 +113,73 @@ export default function CreateQuizForm() {
                 <Link to="/dashboard"><Button className="btn-primary">Go Dashboard</Button></Link>
             </div>
             <h4 className="text-center">Create Quiz</h4>
-            {/* <hr /> */}
+
+            {/* Quiz Title section */}
+            <div className="d-flex justify-content-between">
+                <div className="w-50">
+                    <FormGroup>
+                        <Label htmlFor="quizTitle">Quiz title *</Label>
+                        <Input
+                            placeholder="Quiz title"
+                            id="quizTitle"
+                            name="quizTitle"
+                            value={quizTitle}
+                            required
+                            onChange={(e) => {
+                                setQuizTitle(e.target.value);
+                                setQuizId("");
+                            }}
+                        />
+                    </FormGroup>
+                </div>
+
+                <span className="mx-2">or</span>
+                <div className="w-50">
+                    <FormGroup>
+                        <Label for="quizList">
+                            Select from existing
+                        </Label>
+                        <Input
+                            id="quizList"
+                            name="select"
+                            type="select"
+                            value={quizId}
+                            onChange={quizSelectionHandler}
+                        >
+                            <option disabled>select</option>
+                            {quizList?.map(itm => <option key={itm.id} value={itm.id}>{itm.title}</option>)}
+                        </Input>
+                    </FormGroup>
+                </div>
+            </div>
+
+            {/* Question Form */}
             <FormGroup>
-                <Label htmlFor="quizTitle">Quiz Title *</Label>
+                <Label htmlFor="questionTitle">Question Title *</Label>
                 <Input
                     placeholder="Quiz title"
-                    id="quizTitle"
-                    name="quizTitle"
-                    value={quizTitle}
+                    id="questionTitle"
+                    name="questionTitle"
+                    value={questionTitle}
                     required
-                    onChange={(e) => setQuizTitle(e.target.value)}
+                    onChange={(e) => setQuestionTitle(e.target.value)}
                 />
             </FormGroup>
             <p className="fw-bold">Option List <small className="text-muted">(You have to add minimum 2 options)</small></p>
             <FormGroup>
-                <Label htmlFor="optionTitle">Option {quizOptions.length + 1}</Label>
+                <Label htmlFor="optionTitle">Option {options.length + 1}</Label>
                 <Input
                     placeholder="Press Enter to add"
                     id="optionTitle"
                     name="optionTitle"
-                    value={quizOption}
-                    onKeyUp={handleQuizOptionSet}
-                    onChange={(e) => setQuizOption(e.target.value)}
+                    value={option}
+                    onKeyUp={handleOptionSet}
+                    onChange={(e) => setOption(e.target.value)}
                 />
             </FormGroup>
-            {quizOptions.length ? <p>Click on the correct option(s) <small className="text-muted">(Have to select at least one)</small></p> : ""}
+            {options.length ? <p>Click on the correct option(s) <small className="text-muted">(Have to select at least one)</small></p> : ""}
             <ListGroup>
-                {quizOptions.map((option) => (
+                {options?.map((option) => (
                     <ListGroupItem color={correctOption?.includes(option.id) || option.id === correctOption ? "primary" : "secondary"} className="mb-2" key={option.id} onClick={() => onCorrectOptionSelect(option.id)}>
 
                         {option.title}

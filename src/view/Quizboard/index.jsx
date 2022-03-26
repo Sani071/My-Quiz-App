@@ -1,15 +1,18 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import { Button } from "reactstrap";
 import QuizOption from "../../components/quiz/option";
 import QuizTitle from "../../components/quiz/title";
-import { QuizContext } from "../../context/QuizContext";
+import { QuizContext, QuizDispatchContext } from "../../context/QuizContext";
 
 export default function QuizBoard() {
-    const quizList = useContext(QuizContext);
+    let { id } = useParams();
+    const { questionList } = useContext(QuizContext);
+    const { getQuestionByQuiz } = useContext(QuizDispatchContext);
     const [isCorrectAnswer, setCorrectAnswer] = useState(false);
     const [answeredId, setAnsweredId] = useState();
     const [point, setPoint] = useState(0);
-    const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
     const reset = () => {
         setCorrectAnswer(false);
@@ -26,18 +29,22 @@ export default function QuizBoard() {
     };
 
     const onNextHandler = () => {
-        if (quizList.length - 1 > currentQuizIndex) {
-            setCurrentQuizIndex(currentQuizIndex + 1);
+        if (questionList.length - 1 > currentQuestionIndex) {
+            setCurrentQuestionIndex(currentQuestionIndex + 1);
             reset();
         }
     };
 
+    useEffect(() => {
+        console.log("id ", id);
+        getQuestionByQuiz(id);
+    }, [id]);
 
     return (
         <>
-            <span>{point}</span>
+            <h5 className="text-end pe-3">Your Point <span className="border d-inline-block p-2 rounded-circle border-info">{point}</span></h5>
             {
-                quizList?.length ? [quizList[currentQuizIndex]].map((quiz) => {
+                questionList?.length ? [questionList[currentQuestionIndex]].map((quiz) => {
                     return <div key={quiz.id}>
                         <QuizTitle title={quiz.title} />
 
@@ -60,7 +67,7 @@ export default function QuizBoard() {
 
             <div className="text-center mt-3">
                 <Button
-                    disabled={!answeredId || !(quizList.length - 1 > currentQuizIndex)}
+                    disabled={!answeredId || !(questionList.length - 1 > currentQuestionIndex)}
                     size="lg"
                     onClick={onNextHandler}>Next</Button>
             </div>
