@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Button } from "reactstrap";
-import GameEndScreen from "../../components/quiz/quizEnd";
 import QuizOption from "../../components/quiz/option";
 import QuizTitle from "../../components/quiz/title";
 import { QuizContext, QuizDispatchContext } from "../../context/QuizContext";
@@ -14,8 +13,6 @@ export default function QuizBoard() {
     const [answeredId, setAnsweredId] = useState();
     const [point, setPoint] = useState(0);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-    const [currentQuestion, setCurrentQuestion] = useState(0);
-    const [hasQuizEnd, setQuizEnd] = useState(false);
 
     const reset = () => {
         setCorrectAnswer(false);
@@ -27,7 +24,7 @@ export default function QuizBoard() {
             setAnsweredId(answerId);
             const isCorrect = answerId === correctAnswer;
             setCorrectAnswer(isCorrect);
-            setPoint(isCorrect ? point + currentQuestion.rewardPoint : point);
+            setPoint(isCorrect ? point + 1 : point - 1);
         }
     };
 
@@ -39,30 +36,21 @@ export default function QuizBoard() {
     };
 
     useEffect(() => {
-        questionList?.length && setCurrentQuestion(questionList[currentQuestionIndex]);
-    }, [currentQuestionIndex, questionList]);
-
-    useEffect(() => {
+        console.log("id ", id);
         getQuestionByQuiz(id);
     }, [id]);
 
-    useEffect(() => {
-        setTimeout(() => {
-            setQuizEnd(answeredId && questionList.length - 1 === currentQuestionIndex);
-        }, 1500);
-    }, [currentQuestionIndex, answeredId]);
-
     return (
         <>
-            {hasQuizEnd ? <GameEndScreen point={point} /> : <>
-                <h5 className="text-end pe-3">Your Point <span className="border d-inline-block p-2 rounded-circle border-info">{point}</span></h5>
-                {
-                    currentQuestion ? <div >
-                        <QuizTitle title={currentQuestion.title} />
+            <h5 className="text-end pe-3">Your Point <span className="border d-inline-block p-2 rounded-circle border-info">{point}</span></h5>
+            {
+                questionList?.length ? [questionList[currentQuestionIndex]].map((quiz) => {
+                    return <div key={quiz.id}>
+                        <QuizTitle title={quiz.title} />
 
-                        {currentQuestion.options.map((option) =>
+                        {quiz.options.map((option) =>
                             <div key={option.id}
-                                onClick={() => validateAnswer(option.id, currentQuestion.correctOption)}
+                                onClick={() => validateAnswer(option.id, quiz.correctOption)}
                                 aria-hidden="true"
                             >
                                 <QuizOption
@@ -73,20 +61,16 @@ export default function QuizBoard() {
                                 />
                             </div>
                         )}
-                        {currentQuestion?.isMultiChoice && <p>It is a multi-choice question. You can choose multiple option</p>}
-                    </div>
-                        : <p>Loading...</p>}
+                    </div>;
+                })
+                    : ""}
 
-                <div className="text-center mt-3">
-                    <Button
-                        disabled={!answeredId || !(questionList.length - 1 > currentQuestionIndex)}
-                        size="lg"
-                        onClick={onNextHandler}>Next</Button>
-                </div>
-            </>
-            }
-
-
+            <div className="text-center mt-3">
+                <Button
+                    disabled={!answeredId || !(questionList.length - 1 > currentQuestionIndex)}
+                    size="lg"
+                    onClick={onNextHandler}>Next</Button>
+            </div>
         </>
     );
 }

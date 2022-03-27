@@ -18,7 +18,7 @@ export default function CreateQuizForm() {
     const [option, setOption] = useState("");
     const [correctOption, setCorrectOption] = useState();
     const [isFormValid, setIsFormValid] = useState(false);
-
+    const [rewardPoint, setRewardPoint] = useState(1);
     const [isMultiChoice, setIsMultiChoice] = useState(false);
 
     const handleOptionSet = (event) => {
@@ -64,6 +64,7 @@ export default function CreateQuizForm() {
         setCorrectOption();
         setIsFormValid(false);
         setIsMultiChoice(false);
+        setRewardPoint(1);
     };
 
     const createQuiz = () => {
@@ -83,8 +84,10 @@ export default function CreateQuizForm() {
                 title: questionTitle,
                 isMultiChoice,
                 options,
+                rewardPoint: parseInt(rewardPoint) > 0 ? +rewardPoint : 1
 
             };
+            console.log("payload ", question);
             setQuizHandler(question, quiz?.id ? quiz : null);
             resetFrom();
         } else {
@@ -144,6 +147,7 @@ export default function CreateQuizForm() {
                             name="select"
                             type="select"
                             value={quizId}
+                            disabled={quizList.length <= 0}
                             onChange={quizSelectionHandler}
                         >
                             <option disabled>select</option>
@@ -165,6 +169,23 @@ export default function CreateQuizForm() {
                     onChange={(e) => setQuestionTitle(e.target.value)}
                 />
             </FormGroup>
+
+            <FormGroup>
+                <Label htmlFor="rewardPoint">Reward Point</Label>
+                <Input
+                    placeholder="Reward point"
+                    id="rewardPoint"
+                    name="rewardPoint"
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={rewardPoint}
+                    required
+                    onChange={(e) => setRewardPoint(e.target.value)}
+                />
+            </FormGroup>
+
+            {/* Option section */}
             <p className="fw-bold">Option List <small className="text-muted">(You have to add minimum 2 options)</small></p>
             <FormGroup>
                 <Label htmlFor="optionTitle">Option {options.length + 1}</Label>
