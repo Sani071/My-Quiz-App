@@ -7,17 +7,20 @@ import { BrowserRouter as Router } from "react-router-dom";
 import reportWebVitals from "./reportWebVitals";
 import AppLayout from "./AppLayout";
 import { QuizProvider } from "./context/QuizContext";
-
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 ReactDOM.render(
     <React.StrictMode>
-        <Router>
-            <AppLayout>
-                <QuizProvider>
-                    <App />
-                </QuizProvider>
-            </AppLayout>
-        </Router>
-    </React.StrictMode>,
+        <DndProvider backend={HTML5Backend}>
+            <Router>
+                <AppLayout>
+                    <QuizProvider>
+                        <App />
+                    </QuizProvider>
+                </AppLayout>
+            </Router>
+        </DndProvider>
+    </React.StrictMode >,
     document.getElementById("root")
 );
 

@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Button } from "reactstrap";
-import QuizOption from "../../components/quiz/option";
-import QuizTitle from "../../components/quiz/title";
+import QuizOption from "../../components/question/option";
+import QuizTitle from "../../components/question/title";
 import { QuizContext, QuizDispatchContext } from "../../context/QuizContext";
 
 export default function QuizBoard() {
@@ -13,11 +13,6 @@ export default function QuizBoard() {
     const [answeredId, setAnsweredId] = useState();
     const [point, setPoint] = useState(0);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-
-    const reset = () => {
-        setCorrectAnswer(false);
-        setAnsweredId();
-    };
 
     const validateAnswer = (answerId, correctAnswer) => {
         if (!answeredId) {
@@ -31,7 +26,8 @@ export default function QuizBoard() {
     const onNextHandler = () => {
         if (questionList.length - 1 > currentQuestionIndex) {
             setCurrentQuestionIndex(currentQuestionIndex + 1);
-            reset();
+            setCorrectAnswer(false);
+            setAnsweredId();
         }
     };
 

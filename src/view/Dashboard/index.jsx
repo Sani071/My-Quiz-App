@@ -4,7 +4,7 @@ import MyQuizList from "../../components/dashboard/myQuizList";
 export default function Dashboard() {
     return (
         <>
-            <MyQuizList />
+            <MyQuizList admin />
         </>
     );
 }

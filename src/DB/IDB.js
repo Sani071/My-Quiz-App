@@ -1,5 +1,7 @@
 const dbVersion = 1;
-
+/**
+ * Creating a Quiz database on IndexDB 
+ */
 export default () => {
     const dbName = "Quiz";
     const request = indexedDB.open(dbName, dbVersion);
@@ -14,6 +16,7 @@ export default () => {
 
     request.onupgradeneeded = (e) => {
         const db = e.target.result;
+        // Collection name (we've two collection one for quiz and other one for question)
         db.createObjectStore("quiz", { autoIncrement: true });
         db.createObjectStore("question", { autoIncrement: true });
     };

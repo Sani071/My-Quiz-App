@@ -1,9 +1,9 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Button } from "reactstrap";
-import GameEndScreen from "../../components/quiz/quizEnd";
-import QuizOption from "../../components/quiz/option";
-import QuizTitle from "../../components/quiz/title";
+import GameEndScreen from "../../components/question/quizEnd";
+import QuizOption from "../../components/question/option";
+import QuizTitle from "../../components/question/title";
 import { QuizContext, QuizDispatchContext } from "../../context/QuizContext";
 
 export default function QuizBoard() {
@@ -66,6 +66,7 @@ export default function QuizBoard() {
                                 aria-hidden="true"
                             >
                                 <QuizOption
+                                    isImage={option.isImage}
                                     isCorrectAnswer={answeredId === option.id && isCorrectAnswer}
                                     isItAnsweredId={answeredId}
                                     title={option.title}

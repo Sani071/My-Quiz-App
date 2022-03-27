@@ -3,15 +3,15 @@ import React, { useContext } from "react";
 import { Link } from "react-router-dom";
 import { QuizContext } from "../../context/QuizContext";
 
-export default function MyQuizList({ preview, visitor }) {
+export default function MyQuizList({ preview, visitor, admin }) {
     const { quizList } = useContext(QuizContext);
     return (
         <>
-            {!preview && !visitor &&
+            {admin &&
                 <>
                     <div className="d-flex justify-content-between">
-                        <h1>My Quiz List</h1>
-                        <Link to="/create-quiz"><Button className="btn-primary">Create New</Button></Link>
+                        <h4>My Quiz List</h4>
+                        <Link to="/create-quiz"><Button color="primary">Create New</Button></Link>
                     </div>
                     <hr />
                 </>
@@ -21,10 +21,14 @@ export default function MyQuizList({ preview, visitor }) {
             {
                 quizList.length ? <ol>
                     {quizList.map(quiz =>
-                        <li className="h4 px-2" key={quiz.id}>
-                            <div className="d-flex justify-content-between">
-                                <p className="text-truncate">{quiz.title}</p>
-                                {visitor && <div> <Link to={`/quiz/${quiz.id}`}> <Button>Play</Button></Link></div>}
+                        <li className="px-2 h5" key={quiz.id}>
+                            <div className="d-flex justify-content-between m-0 mb-2">
+                                <p className="text-truncate m-0">{quiz.title}</p>
+
+                                {admin && <div> <Link to={`/question/${quiz.id}`}> <Button color="info">Edit/Show</Button></Link></div>}
+
+
+                                {visitor && <div> <Link to={`/quiz/${quiz.id}`}> <Button color="info">Play</Button></Link></div>}
                             </div>
                         </li>
                     )}

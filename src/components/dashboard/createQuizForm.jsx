@@ -1,10 +1,11 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import Select from "react-dropdown-select";
 import {
     Button, FormGroup, Input, Label, ListGroup, ListGroupItem,
 } from "reactstrap";
 import { QuizContext, QuizDispatchContext } from "../../context/QuizContext";
-import { genUniqId } from "../../helper";
+import { genUniqId, isImageUrl } from "../../helper";
 import MyQuizList from "./myQuizList";
 
 export default function CreateQuizForm() {
@@ -21,18 +22,32 @@ export default function CreateQuizForm() {
     const [rewardPoint, setRewardPoint] = useState(1);
     const [isMultiChoice, setIsMultiChoice] = useState(false);
 
+    /**
+     * Handler for set option by Enter pressing.
+     * 
+     * @param {Object} event 
+     */
     const handleOptionSet = (event) => {
-        if (event.key === "Enter" && event.target.value) {
+        const title = event.target.value;
+        if (event.key === "Enter" && title) {
             const option = {
-                title: event.target.value,
+                title,
                 id: genUniqId(),
+                isImage: isImageUrl(title)
             };
 
             setOptions([option, ...options]);
+            // Clearing option input value to set new
             setOption("");
         }
     };
-    const onCorrectOptionSelect = (optionId) => {
+
+    /**
+    * Handler for set correct option.
+    * 
+    * @param {string} optionId 
+    */
+    const onCorrectOptionSelection = (optionId) => {
         if (isMultiChoice) {
             setCorrectOption([...correctOption, optionId]);
         } else {
@@ -40,22 +55,31 @@ export default function CreateQuizForm() {
         }
     };
 
-    const quizSelectionHandler = (e) => {
-        setQuizId(e.target.value);
+    /**
+     * Handler for quiz type selection from existing quiz list
+     * 
+     * @param {Array} value 
+     */
+    const onExistingQuizSelect = (value) => {
+        setQuizId(value[0]?.id);
         setQuizTitle("");
     };
 
-    useEffect(() => {
 
+    /**
+     * set correct option as single if question is single choice otherwise make it multiple (array) 
+     */
+    useEffect(() => {
         if (isMultiChoice && !Array.isArray(correctOption)) {
             setCorrectOption(correctOption ? [correctOption] : []);
-        }
-
-        else if (!isMultiChoice && Array.isArray(correctOption) && correctOption.length) {
+        } else if (!isMultiChoice && Array.isArray(correctOption) && correctOption.length) {
             setCorrectOption(correctOption?.pop());
         }
     }, [isMultiChoice, correctOption]);
 
+    /**
+     * Reset form handler
+     */
     const resetFrom = () => {
         setQuizTitle("");
         setQuestionTitle("");
@@ -67,6 +91,9 @@ export default function CreateQuizForm() {
         setRewardPoint(1);
     };
 
+    /**
+     * Quiz creation handler
+     */
     const createQuiz = () => {
         if (isFormValid) {
             let quiz = null;
@@ -87,7 +114,6 @@ export default function CreateQuizForm() {
                 rewardPoint: parseInt(rewardPoint) > 0 ? +rewardPoint : 1
 
             };
-            console.log("payload ", question);
             setQuizHandler(question, quiz?.id ? quiz : null);
             resetFrom();
         } else {
@@ -95,8 +121,10 @@ export default function CreateQuizForm() {
         }
     };
 
+    /**
+     * Setting form submit button status based on form required fields.
+     */
     useEffect(() => {
-
         if ((quizTitle || quizId) && questionTitle && options.length > 1) {
             if (Array.isArray(correctOption) && correctOption.length) {
                 setIsFormValid(true);
@@ -139,20 +167,17 @@ export default function CreateQuizForm() {
                 <span className="mx-2">or</span>
                 <div className="w-50">
                     <FormGroup>
-                        <Label for="quizList">
+                        <Label htmlFor="quizList">
                             Select from existing
                         </Label>
-                        <Input
-                            id="quizList"
-                            name="select"
-                            type="select"
-                            value={quizId}
+
+                        <Select
+                            options={quizList}
+                            labelField="title"
+                            valueField="id"
                             disabled={quizList.length <= 0}
-                            onChange={quizSelectionHandler}
-                        >
-                            <option disabled>select</option>
-                            {quizList?.map(itm => <option key={itm.id} value={itm.id}>{itm.title}</option>)}
-                        </Input>
+                            onChange={onExistingQuizSelect} />
+
                     </FormGroup>
                 </div>
             </div>
@@ -161,7 +186,7 @@ export default function CreateQuizForm() {
             <FormGroup>
                 <Label htmlFor="questionTitle">Question Title *</Label>
                 <Input
-                    placeholder="Quiz title"
+                    placeholder="Press Enter to add"
                     id="questionTitle"
                     name="questionTitle"
                     value={questionTitle}
@@ -201,9 +226,9 @@ export default function CreateQuizForm() {
             {options.length ? <p>Click on the correct option(s) <small className="text-muted">(Have to select at least one)</small></p> : ""}
             <ListGroup>
                 {options?.map((option) => (
-                    <ListGroupItem color={correctOption?.includes(option.id) || option.id === correctOption ? "primary" : "secondary"} className="mb-2" key={option.id} onClick={() => onCorrectOptionSelect(option.id)}>
+                    <ListGroupItem color={correctOption?.includes(option.id) || option.id === correctOption ? "primary" : "secondary"} className="mb-2" key={option.id} onClick={() => onCorrectOptionSelection(option.id)}>
 
-                        {option.title}
+                        {option.isImage ? <img alt="loading.." src={option.title} /> : <p>{option.title}</p>}
                     </ListGroupItem>
                 ))}
             </ListGroup>

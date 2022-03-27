@@ -3,9 +3,14 @@ import DB from "./IDB";
 const onRequestError = (e) => {
     console.log("Database Error", e);
 };
+
 const quizStore = "quiz";
 const questionStore = "question";
 
+/**
+ * storing quiz to IndexDB
+ * @param {Object} quiz 
+ */
 export const setQuiz = (quiz) => {
     const request = DB();
 
@@ -19,6 +24,10 @@ export const setQuiz = (quiz) => {
     };
 };
 
+/**
+ * Retrieving quiz from IndexDB
+ * @param {Object} quiz 
+ */
 export const getQuiz = (callback) => {
     const request = DB();
 
@@ -34,6 +43,10 @@ export const getQuiz = (callback) => {
     };
 };
 
+/**
+ * storing question to IndexDB
+ * @param {Object} quiz 
+ */
 export const setQuestion = (question) => {
     const request = DB();
 
@@ -47,22 +60,10 @@ export const setQuestion = (question) => {
     };
 };
 
-
-// export const getQuestion = (callback) => {
-//     const request = DB();
-
-//     request.onerror = onRequestError;
-
-//     request.onsuccess = (e) => {
-//         const db = e.target.result;
-//         const transaction = db.transaction([questionStore], "readonly");
-//         const store = transaction.objectStore(questionStore);
-//         store.getAll().onsuccess = (ev) => {
-//             callback(ev.target.result);
-//         };
-//     };
-// };
-
+/**
+ * Retrieving question by quiz id from IndexDB
+ * @param {Object} quiz 
+ */
 export const getQuestionByQuizId = (quizId, callback) => {
     const request = DB();
 
