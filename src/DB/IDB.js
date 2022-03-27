@@ -17,8 +17,8 @@ export default () => {
     request.onupgradeneeded = (e) => {
         const db = e.target.result;
         // Collection name (we've two collection one for quiz and other one for question)
-        db.createObjectStore("quiz", { autoIncrement: true });
-        db.createObjectStore("question", { autoIncrement: true });
+        db.createObjectStore("quiz", { autoIncrement: true, keyPath: "id" });
+        db.createObjectStore("question", { autoIncrement: true, keyPath: "id" });
     };
 
     return request;

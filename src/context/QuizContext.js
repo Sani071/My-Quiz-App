@@ -1,5 +1,5 @@
 import React, { createContext, useEffect, useState } from "react";
-import { getQuiz, setQuiz, setQuestion, getQuestionByQuizId } from "../DB/useQuizIDB";
+import { getQuiz, setQuiz, setQuestion, getQuestionByQuizId, countQuestionByQuizId } from "../DB/useQuizIDB";
 
 // Create two context:
 // QuizContext: to query the context state
@@ -32,7 +32,7 @@ function QuizProvider({ children }) {
 
     return (
         <QuizContext.Provider value={{ quizList, questionList }}>
-            <QuizDispatchContext.Provider value={{ setQuizHandler, getQuestionByQuiz }}>
+            <QuizDispatchContext.Provider value={{ setQuizHandler, getQuestionByQuiz, countQuestionByQuizId }}>
                 {children}
             </QuizDispatchContext.Provider>
         </QuizContext.Provider>

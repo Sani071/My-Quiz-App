@@ -9,7 +9,7 @@ import { genUniqId, isImageUrl } from "../../helper";
 import MyQuizList from "./myQuizList";
 
 export default function CreateQuizForm() {
-    const { setQuizHandler } = useContext(QuizDispatchContext);
+    const { setQuizHandler, countQuestionByQuizId } = useContext(QuizDispatchContext);
     const { quizList } = useContext(QuizContext);
 
     const [quizTitle, setQuizTitle] = useState("");
@@ -81,10 +81,10 @@ export default function CreateQuizForm() {
      * Reset form handler
      */
     const resetFrom = () => {
-        setQuizTitle("");
         setQuestionTitle("");
         setOptions([]);
         setOption("");
+        setQuizTitle("");
         setCorrectOption();
         setIsFormValid(false);
         setIsMultiChoice(false);
@@ -96,26 +96,33 @@ export default function CreateQuizForm() {
      */
     const createQuiz = () => {
         if (isFormValid) {
-            let quiz = null;
+
+            const doSave = (quiz, order) => {
+                const question = {
+                    id: genUniqId(),
+                    correctOption,
+                    isMultiChoice,
+                    options,
+                    order,
+                    quizId: quiz?.id || quizId,
+                    title: questionTitle,
+                    rewardPoint: parseInt(rewardPoint) > 0 ? +rewardPoint : 1
+                };
+                setQuizHandler(question, quiz?.id ? quiz : null);
+                resetFrom();
+            };
             if (quizTitle) {
-                quiz = {
+                const quiz = {
                     id: genUniqId(),
                     title: quizTitle
                 };
+                doSave(quiz, 1);
+            } else {
+                countQuestionByQuizId(quizId, (value) => {
+                    doSave(null, value + 1);
+                });
             }
 
-            const question = {
-                id: genUniqId(),
-                quizId: quiz?.id || quizId,
-                correctOption,
-                title: questionTitle,
-                isMultiChoice,
-                options,
-                rewardPoint: parseInt(rewardPoint) > 0 ? +rewardPoint : 1
-
-            };
-            setQuizHandler(question, quiz?.id ? quiz : null);
-            resetFrom();
         } else {
             alert("Please provide required data for the quiz");
         }

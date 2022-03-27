@@ -62,7 +62,8 @@ export const setQuestion = (question) => {
 
 /**
  * Retrieving question by quiz id from IndexDB
- * @param {Object} quiz 
+ * @param {string} quizId 
+ * @param {Function} callback 
  */
 export const getQuestionByQuizId = (quizId, callback) => {
     const request = DB();
@@ -78,6 +79,29 @@ export const getQuestionByQuizId = (quizId, callback) => {
             let payload = [];
             if (Array.isArray(questions)) {
                 payload = questions.filter(question => question.quizId === quizId);
+            }
+            callback(payload);
+        };
+    };
+};
+/**
+ * Getting how much questions are available available by quizId
+ * @param {Object} quiz 
+ */
+export const countQuestionByQuizId = (quizId, callback) => {
+    const request = DB();
+
+    request.onerror = onRequestError;
+
+    request.onsuccess = (e) => {
+        const db = e.target.result;
+        const transaction = db.transaction([questionStore], "readonly");
+        const store = transaction.objectStore(questionStore);
+        store.getAll().onsuccess = (ev) => {
+            const questions = ev.target.result;
+            let payload = [];
+            if (Array.isArray(questions)) {
+                payload = questions.filter(question => question.quizId === quizId).length;
             }
             callback(payload);
         };
