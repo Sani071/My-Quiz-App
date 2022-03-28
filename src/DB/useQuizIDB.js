@@ -9,7 +9,7 @@ const questionStore = "question";
 
 /**
  * storing quiz to IndexDB
- * @param {Object} quiz 
+ * @param {Object} quiz - Quiz data to store in IndexDB
  */
 export const setQuiz = (quiz) => {
     const request = DB();
@@ -26,7 +26,7 @@ export const setQuiz = (quiz) => {
 
 /**
  * Retrieving quiz from IndexDB
- * @param {Object} quiz 
+ * @param {Function} callback - callback function to invocation with result
  */
 export const getQuiz = (callback) => {
     const request = DB();
@@ -45,7 +45,7 @@ export const getQuiz = (callback) => {
 
 /**
  * storing question to IndexDB
- * @param {Object} quiz 
+ * @param {Object} question - question object to save on IndexDB
  */
 export const setQuestion = (question) => {
     const request = DB();
@@ -61,9 +61,35 @@ export const setQuestion = (question) => {
 };
 
 /**
+ * Updating question by ID
+ * @param {Object} question - question object to update on IndexDB
+ * @param {Object} updateId - question id to update on IndexDB
+ */
+export const updateQuestionById = (question, updateId, callback) => {
+    const request = DB();
+
+    request.onerror = onRequestError;
+
+    request.onsuccess = (e) => {
+        const db = e.target.result;
+        const transaction = db.transaction([questionStore], "readwrite");
+        const store = transaction.objectStore(questionStore);
+        store.get(updateId).onsuccess = (ev) => {
+            const targetQuestion = ev.target.result;
+            const newData = {
+                ...targetQuestion,
+                ...question
+            };
+            store.put(newData);
+            callback();
+        };
+    };
+};
+
+/**
  * Retrieving question by quiz id from IndexDB
- * @param {string} quizId 
- * @param {Function} callback 
+ * @param {string} quizId - quiz id to retrieve
+ * @param {Function} callback - callback function to invocation with result
  */
 export const getQuestionByQuizId = (quizId, callback) => {
     const request = DB();
@@ -78,15 +104,73 @@ export const getQuestionByQuizId = (quizId, callback) => {
             const questions = ev.target.result;
             let payload = [];
             if (Array.isArray(questions)) {
-                payload = questions.filter(question => question.quizId === quizId);
+                payload = questions
+                    .filter((question) => question.quizId === quizId)
+                    .sort((itmA, itmB) => (itmA.order > itmB.order ? 1 : -1));
             }
             callback(payload);
         };
     };
 };
+
+/**
+ * Retrieving question by id from IndexDB
+ * @param {string} questionId - question id to retrieve
+ * @param {Function} callback - callback function to invocation with result
+ */
+export const getQuestionById = (questionId, callback) => {
+    const request = DB();
+
+    request.onerror = onRequestError;
+
+    request.onsuccess = (e) => {
+        const db = e.target.result;
+        const transaction = db.transaction([questionStore], "readonly");
+        const store = transaction.objectStore(questionStore);
+        store.get(questionId).onsuccess = (ev) => {
+            callback(ev.target.result);
+        };
+    };
+};
+
+/**
+ * Updating order of a question by questionId
+ * @param {string} fromQuestionId - From question id to swap order
+ * @param {string} toQuestionId - To question id to swap order
+ * @param {string} orderTo - To order number to set from question order
+ * @param {Function} callback - callback function to invocation with result
+ */
+export const updateQuestionOrderByQuestionId = (
+    fromQuestionId,
+    toQuestionId,
+    orderTo,
+    callback
+) => {
+    const request = DB();
+
+    request.onerror = onRequestError;
+
+    request.onsuccess = (e) => {
+        const db = e.target.result;
+        const transaction = db.transaction([questionStore], "readwrite");
+        const store = transaction.objectStore(questionStore);
+        store.get(fromQuestionId).onsuccess = (ev) => {
+            const fromQuestion = ev.target.result;
+            store.get(toQuestionId).onsuccess = (ev) => {
+                const toQuestion = ev.target.result;
+                toQuestion.order = fromQuestion.order;
+                fromQuestion.order = orderTo;
+                store.put(fromQuestion);
+                store.put(toQuestion);
+                callback();
+            };
+        };
+    };
+};
 /**
  * Getting how much questions are available available by quizId
- * @param {Object} quiz 
+ * @param {Object} quizId - Quiz id to get the questions
+ * @param {Function} callback - callback function to invocation with result
  */
 export const countQuestionByQuizId = (quizId, callback) => {
     const request = DB();
@@ -101,7 +185,9 @@ export const countQuestionByQuizId = (quizId, callback) => {
             const questions = ev.target.result;
             let payload = [];
             if (Array.isArray(questions)) {
-                payload = questions.filter(question => question.quizId === quizId).length;
+                payload = questions.filter(
+                    (question) => question.quizId === quizId
+                ).length;
             }
             callback(payload);
         };

@@ -1,47 +1,64 @@
 import React, { useCallback, useContext, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { QuizContext, QuizDispatchContext } from "../../context/QuizContext";
-import { ListGroup, ListGroupItem } from "reactstrap";
+import { Button, ListGroup, ListGroupItem } from "reactstrap";
 import QuestionItemCard from "./questionItem";
-// import update from 'immutability-helper';
 
 export default function QuestionList() {
-    let { id } = useParams();
+    const { id } = useParams();
     const { questionList } = useContext(QuizContext);
-    const { getQuestionByQuiz } = useContext(QuizDispatchContext);
+    const { getQuestionByQuiz, updateQuestionOrderByQuestionId } =
+        useContext(QuizDispatchContext);
+
     useEffect(() => {
         getQuestionByQuiz(id);
     }, [id]);
 
-    const moveCard = useCallback((dragIndex, hoverIndex) => {
-        // setCards((prevCards) => update(prevCards, {
-        //     $splice: [
-        //         [dragIndex, 1],
-        //         [hoverIndex, 0, prevCards[dragIndex]],
-        //     ],
-        // }));
-        console.log({ dragIndex, hoverIndex });
+    const changeOrder = useCallback((fromQuestionId, toQuestionId, orderTo) => {
+        updateQuestionOrderByQuestionId(fromQuestionId, toQuestionId, orderTo, () =>
+            getQuestionByQuiz(id)
+        );
     }, []);
 
-    const renderCard = useCallback((question, index) => {
-        return (<QuestionItemCard key={question.id} index={index} title={question.title} moveCard={moveCard} />);
+    const renderQuestionItem = useCallback((question, index) => {
+        return (
+            <div className="d-flex justify-content-between align-items-center">
+                <div className="w-100 me-2">
+                    <QuestionItemCard
+                        key={question.id}
+                        index={index}
+                        title={question.title}
+                        changeOrder={changeOrder}
+                        question={question}
+                    />
+                </div>
+                <Link to={`/update-question/${question.id}`}><Button color="primary">Edit</Button></Link>
+            </div>
+        );
     }, []);
 
     return (
         <>
             <h4 className="text-center">All questions</h4>
             <hr />
-            {questionList?.length > 0 ?
+            {questionList?.length > 0 ? (
                 <div>
                     <ListGroup>
                         {questionList.map((question, idx) => {
-                            return <ListGroupItem className="mb-1 cursor-pointer" key={question.id}>
-                                {renderCard(question, idx)}
-                            </ListGroupItem>;
+                            return (
+                                <ListGroupItem
+                                    className="mb-1 cursor-pointer"
+                                    key={question.id}
+                                >
+                                    {renderQuestionItem(question, idx)}
+                                </ListGroupItem>
+                            );
                         })}
                     </ListGroup>
                 </div>
-                : <span>loading...</span>}
+            ) : (
+                <span>loading...</span>
+            )}
         </>
     );
 }

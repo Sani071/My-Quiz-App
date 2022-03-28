@@ -1,15 +1,24 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import Select from "react-dropdown-select";
 import {
-    Button, FormGroup, Input, Label, ListGroup, ListGroupItem,
+    Button,
+    FormGroup,
+    Input,
+    Label,
+    ListGroup,
+    ListGroupItem,
 } from "reactstrap";
 import { QuizContext, QuizDispatchContext } from "../../context/QuizContext";
 import { genUniqId, isImageUrl } from "../../helper";
 import MyQuizList from "./myQuizList";
 
-export default function CreateQuizForm() {
-    const { setQuizHandler, countQuestionByQuizId } = useContext(QuizDispatchContext);
+export default function CreateQuizForm({ update }) {
+    const { id } = useParams();
+    const navigate = useNavigate();
+
+    const { setQuizHandler, getQuestionById, countQuestionByQuizId } =
+        useContext(QuizDispatchContext);
     const { quizList } = useContext(QuizContext);
 
     const [quizTitle, setQuizTitle] = useState("");
@@ -17,15 +26,15 @@ export default function CreateQuizForm() {
     const [questionTitle, setQuestionTitle] = useState("");
     const [options, setOptions] = useState([]);
     const [option, setOption] = useState("");
-    const [correctOption, setCorrectOption] = useState();
+    const [correctOption, setCorrectOption] = useState("");
     const [isFormValid, setIsFormValid] = useState(false);
     const [rewardPoint, setRewardPoint] = useState(1);
     const [isMultiChoice, setIsMultiChoice] = useState(false);
 
     /**
      * Handler for set option by Enter pressing.
-     * 
-     * @param {Object} event 
+     *
+     * @param {Object} event
      */
     const handleOptionSet = (event) => {
         const title = event.target.value;
@@ -33,7 +42,7 @@ export default function CreateQuizForm() {
             const option = {
                 title,
                 id: genUniqId(),
-                isImage: isImageUrl(title)
+                isImage: isImageUrl(title),
             };
 
             setOptions([option, ...options]);
@@ -43,10 +52,10 @@ export default function CreateQuizForm() {
     };
 
     /**
-    * Handler for set correct option.
-    * 
-    * @param {string} optionId 
-    */
+     * Handler for set correct option.
+     *
+     * @param {string} optionId
+     */
     const onCorrectOptionSelection = (optionId) => {
         if (isMultiChoice) {
             setCorrectOption([...correctOption, optionId]);
@@ -57,22 +66,25 @@ export default function CreateQuizForm() {
 
     /**
      * Handler for quiz type selection from existing quiz list
-     * 
-     * @param {Array} value 
+     *
+     * @param {Array} value
      */
     const onExistingQuizSelect = (value) => {
         setQuizId(value[0]?.id);
         setQuizTitle("");
     };
 
-
     /**
-     * set correct option as single if question is single choice otherwise make it multiple (array) 
+     * set correct option as single if question is single choice otherwise make it multiple (array)
      */
     useEffect(() => {
         if (isMultiChoice && !Array.isArray(correctOption)) {
             setCorrectOption(correctOption ? [correctOption] : []);
-        } else if (!isMultiChoice && Array.isArray(correctOption) && correctOption.length) {
+        } else if (
+            !isMultiChoice &&
+            Array.isArray(correctOption) &&
+            correctOption.length
+        ) {
             setCorrectOption(correctOption?.pop());
         }
     }, [isMultiChoice, correctOption]);
@@ -85,7 +97,7 @@ export default function CreateQuizForm() {
         setOptions([]);
         setOption("");
         setQuizTitle("");
-        setCorrectOption();
+        setCorrectOption("");
         setIsFormValid(false);
         setIsMultiChoice(false);
         setRewardPoint(1);
@@ -96,25 +108,28 @@ export default function CreateQuizForm() {
      */
     const createQuiz = () => {
         if (isFormValid) {
-
             const doSave = (quiz, order) => {
                 const question = {
-                    id: genUniqId(),
                     correctOption,
                     isMultiChoice,
                     options,
                     order,
-                    quizId: quiz?.id || quizId,
                     title: questionTitle,
-                    rewardPoint: parseInt(rewardPoint) > 0 ? +rewardPoint : 1
+                    rewardPoint: parseInt(rewardPoint) > 0 ? +rewardPoint : 1,
                 };
-                setQuizHandler(question, quiz?.id ? quiz : null);
+
+                if (!update) {
+                    question.id = genUniqId();
+                    question.quizId = quiz?.id || quizId;
+                }
+
+                setQuizHandler(question, !update && quiz?.id ? quiz : null, update && id ? id : null, () => navigate(-1));
                 resetFrom();
             };
             if (quizTitle) {
                 const quiz = {
                     id: genUniqId(),
-                    title: quizTitle
+                    title: quizTitle,
                 };
                 doSave(quiz, 1);
             } else {
@@ -122,7 +137,6 @@ export default function CreateQuizForm() {
                     doSave(null, value + 1);
                 });
             }
-
         } else {
             alert("Please provide required data for the quiz");
         }
@@ -132,7 +146,7 @@ export default function CreateQuizForm() {
      * Setting form submit button status based on form required fields.
      */
     useEffect(() => {
-        if ((quizTitle || quizId) && questionTitle && options.length > 1) {
+        if ((update || (quizTitle || quizId)) && questionTitle && options.length > 1) {
             if (Array.isArray(correctOption) && correctOption.length) {
                 setIsFormValid(true);
             } else if (!Array.isArray(correctOption) && correctOption) {
@@ -143,51 +157,69 @@ export default function CreateQuizForm() {
         } else {
             setIsFormValid(false);
         }
-    }, [questionTitle, quizId, quizTitle, options, correctOption]);
+    }, [questionTitle, quizId, quizTitle, options, correctOption, update]);
+
+    useEffect(() => {
+        if (id && update) {
+            getQuestionById(id, (value) => {
+                const { correctOption, options, rewardPoint, title, isMultiChoice } = value;
+                setCorrectOption(correctOption);
+                setRewardPoint(rewardPoint);
+                setQuestionTitle(title);
+                setOptions(options);
+                setIsMultiChoice(isMultiChoice);
+            });
+        }
+    }, [update, id]);
 
     return (
         <>
             <div className="text-end">
-                <Link to="/dashboard"><Button className="btn-primary">Go Dashboard</Button></Link>
+                <Link to="/dashboard">
+                    <Button className="btn-primary">Go Dashboard</Button>
+                </Link>
             </div>
-            <h4 className="text-center">Create Quiz</h4>
+            <h4 className="text-center">
+                {update ? "Update Question" : "Create Quiz"}
+            </h4>
+            <hr />
 
             {/* Quiz Title section */}
-            <div className="d-flex justify-content-between">
-                <div className="w-50">
-                    <FormGroup>
-                        <Label htmlFor="quizTitle">Quiz title *</Label>
-                        <Input
-                            placeholder="Quiz title"
-                            id="quizTitle"
-                            name="quizTitle"
-                            value={quizTitle}
-                            required
-                            onChange={(e) => {
-                                setQuizTitle(e.target.value);
-                                setQuizId("");
-                            }}
-                        />
-                    </FormGroup>
+            {!update && (
+                <div className="d-flex justify-content-between">
+                    <div className="w-50">
+                        <FormGroup>
+                            <Label htmlFor="quizTitle">Quiz title *</Label>
+                            <Input
+                                placeholder="Quiz title"
+                                id="quizTitle"
+                                name="quizTitle"
+                                value={quizTitle}
+                                required
+                                onChange={(e) => {
+                                    setQuizTitle(e.target.value);
+                                    setQuizId("");
+                                }}
+                            />
+                        </FormGroup>
+                    </div>
+
+                    <span className="mx-2">or</span>
+                    <div className="w-50">
+                        <FormGroup>
+                            <Label htmlFor="quizList">Select from existing</Label>
+
+                            <Select
+                                options={quizList}
+                                labelField="title"
+                                valueField="id"
+                                disabled={quizList.length <= 0}
+                                onChange={onExistingQuizSelect}
+                            />
+                        </FormGroup>
+                    </div>
                 </div>
-
-                <span className="mx-2">or</span>
-                <div className="w-50">
-                    <FormGroup>
-                        <Label htmlFor="quizList">
-                            Select from existing
-                        </Label>
-
-                        <Select
-                            options={quizList}
-                            labelField="title"
-                            valueField="id"
-                            disabled={quizList.length <= 0}
-                            onChange={onExistingQuizSelect} />
-
-                    </FormGroup>
-                </div>
-            </div>
+            )}
 
             {/* Question Form */}
             <FormGroup>
@@ -218,7 +250,12 @@ export default function CreateQuizForm() {
             </FormGroup>
 
             {/* Option section */}
-            <p className="fw-bold">Option List <small className="text-muted">(You have to add minimum 2 options)</small></p>
+            <p className="fw-bold">
+                Option List{" "}
+                <small className="text-muted">
+                    (You have to add minimum 2 options)
+                </small>
+            </p>
             <FormGroup>
                 <Label htmlFor="optionTitle">Option {options.length + 1}</Label>
                 <Input
@@ -230,12 +267,31 @@ export default function CreateQuizForm() {
                     onChange={(e) => setOption(e.target.value)}
                 />
             </FormGroup>
-            {options.length ? <p>Click on the correct option(s) <small className="text-muted">(Have to select at least one)</small></p> : ""}
+            {options.length ? (
+                <p>
+                    Click on the correct option(s){" "}
+                    <small className="text-muted">(Have to select at least one)</small>
+                </p>
+            ) : (
+                ""
+            )}
             <ListGroup>
                 {options?.map((option) => (
-                    <ListGroupItem color={correctOption?.includes(option.id) || option.id === correctOption ? "primary" : "secondary"} className="mb-2" key={option.id} onClick={() => onCorrectOptionSelection(option.id)}>
-
-                        {option.isImage ? <img alt="loading.." src={option.title} /> : <p>{option.title}</p>}
+                    <ListGroupItem
+                        color={
+                            correctOption?.includes(option.id) || option.id === correctOption
+                                ? "primary"
+                                : "secondary"
+                        }
+                        className="mb-2"
+                        key={option.id}
+                        onClick={() => onCorrectOptionSelection(option.id)}
+                    >
+                        {option.isImage ? (
+                            <img alt="loading.." src={option.title} />
+                        ) : (
+                            <p className="m-0 py-1">{option.title}</p>
+                        )}
                     </ListGroupItem>
                 ))}
             </ListGroup>
@@ -247,10 +303,14 @@ export default function CreateQuizForm() {
                     checked={isMultiChoice}
                     onChange={(e) => setIsMultiChoice(e.target.checked)}
                 />
-                <Label className="ms-2" htmlFor="isMultiChoice">Multi choice</Label>
+                <Label className="ms-2" htmlFor="isMultiChoice">
+                    Multi choice
+                </Label>
             </FormGroup>
             <div className="text-center">
-                <Button disabled={!isFormValid} onClick={createQuiz} color="primary">Create</Button>
+                <Button disabled={!isFormValid} onClick={createQuiz} color="primary">
+                    {update ? "Update" : "Create"}
+                </Button>
             </div>
             <MyQuizList preview />
         </>

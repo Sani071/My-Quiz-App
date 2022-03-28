@@ -1,6 +1,6 @@
 const dbVersion = 1;
 /**
- * Creating a Quiz database on IndexDB 
+ * Creating a Quiz database on IndexDB
  */
 export default () => {
     const dbName = "Quiz";
@@ -11,14 +11,20 @@ export default () => {
     };
 
     request.onsuccess = () => {
-        console.log(`Database Opened for ${dbName}`,);
+        console.log(`Database Opened for ${dbName}`);
     };
 
     request.onupgradeneeded = (e) => {
         const db = e.target.result;
         // Collection name (we've two collection one for quiz and other one for question)
-        db.createObjectStore("quiz", { autoIncrement: true, keyPath: "id" });
-        db.createObjectStore("question", { autoIncrement: true, keyPath: "id" });
+        db.createObjectStore("quiz", {
+            autoIncrement: true,
+            keyPath: "id",
+        });
+        db.createObjectStore("question", {
+            autoIncrement: true,
+            keyPath: "id",
+        });
     };
 
     return request;
