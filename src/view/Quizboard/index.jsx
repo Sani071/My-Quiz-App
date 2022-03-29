@@ -35,7 +35,7 @@ export default function QuizBoard() {
     }, [id]);
 
     const checkQuizEnd = () => {
-        setQuizEnd((questionList.length - 1 === currentQuestionIndex) || questionList.length - 1 === total);
+        setQuizEnd((questionList.length - 1 === currentQuestionIndex) || questionList.length === total);
     };
 
     return (

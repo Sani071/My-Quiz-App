@@ -196,11 +196,6 @@ export default function CreateQuizForm({ update }) {
 
     return (
         <>
-            <div className="text-end">
-                <Link to="/dashboard">
-                    <Button className="btn-primary">Go Dashboard</Button>
-                </Link>
-            </div>
             <h4 className="text-center">
                 {update ? "Update Question" : "Create Quiz"}
             </h4>
@@ -234,7 +229,7 @@ export default function CreateQuizForm({ update }) {
                                 options={quizList}
                                 labelField="title"
                                 valueField="id"
-                                disabled={quizList.length <= 0}
+                                disabled={quizList.length <= 0 || quizTitle}
                                 onChange={onExistingQuizSelect}
                             />
                         </FormGroup>
@@ -346,9 +341,13 @@ export default function CreateQuizForm({ update }) {
                 </Label>
             </FormGroup>
             <div className="text-center">
-                <Button disabled={!isFormValid} onClick={createQuiz} color="primary">
+                <Button disabled={!isFormValid} onClick={createQuiz} color="success">
                     {update ? "Update" : "Create"}
                 </Button>
+                <span className="mx-3">Or</span>
+                <Link to="/dashboard">
+                    <Button color="danger">Cancel</Button>
+                </Link>
             </div>
             {!update && <MyQuizList preview />}
         </>
