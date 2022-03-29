@@ -12,6 +12,7 @@ import {
 import { QuizContext, QuizDispatchContext } from "../../context/QuizContext";
 import { genUniqId, isImageUrl } from "../../helper";
 import MyQuizList from "./myQuizList";
+import ImageOption from "../question/imageOption";
 
 export default function CreateQuizForm({ update }) {
     const { id } = useParams();
@@ -321,7 +322,7 @@ export default function CreateQuizForm({ update }) {
                         onClick={() => onCorrectOptionSelection(option.id)}
                     >
                         {option.isImage ? (
-                            <img alt="loading.." src={option.title} />
+                            <ImageOption imageUrl={option.title} />
                         ) : (
                             <p className="m-0 py-1">{option.title}</p>
                         )}
