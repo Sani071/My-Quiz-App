@@ -44,6 +44,27 @@ export const getQuiz = (callback) => {
 };
 
 /**
+ * Retrieving layout of a quiz by id from IndexDB
+ * @param {string} id - Id of the quiz to retrieve
+ * @param {Function} callback - callback function to invocation with result
+ */
+export const getQuizLayoutById = (id, callback) => {
+    const request = DB();
+
+    request.onerror = onRequestError;
+
+    request.onsuccess = (e) => {
+        const db = e.target.result;
+        const transaction = db.transaction([quizStore], "readonly");
+        const store = transaction.objectStore(quizStore);
+        store.get(id).onsuccess = (ev) => {
+            const quiz = ev.target.result;
+            callback(quiz?.layout?.value || "single");
+        };
+    };
+};
+
+/**
  * storing question to IndexDB
  * @param {Object} question - question object to save on IndexDB
  */

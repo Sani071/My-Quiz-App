@@ -17,11 +17,17 @@ export default function CreateQuizForm({ update }) {
     const { id } = useParams();
     const navigate = useNavigate();
 
-    const { setQuizHandler, getQuestionById, countQuestionByQuizId } =
-        useContext(QuizDispatchContext);
+    const {
+        setQuizHandler,
+        setQuestionHandler,
+        updateQuestionHandler,
+        getQuestionById,
+        countQuestionByQuizId,
+    } = useContext(QuizDispatchContext);
     const { quizList } = useContext(QuizContext);
 
     const [quizTitle, setQuizTitle] = useState("");
+    const [layout, setLayout] = useState({ label: "Single", value: "single" });
     const [quizId, setQuizId] = useState("");
     const [questionTitle, setQuestionTitle] = useState("");
     const [options, setOptions] = useState([]);
@@ -101,6 +107,7 @@ export default function CreateQuizForm({ update }) {
         setIsFormValid(false);
         setIsMultiChoice(false);
         setRewardPoint(1);
+        setLayout("");
     };
 
     /**
@@ -123,13 +130,23 @@ export default function CreateQuizForm({ update }) {
                     question.quizId = quiz?.id || quizId;
                 }
 
-                setQuizHandler(question, !update && quiz?.id ? quiz : null, update && id ? id : null, () => navigate(-1));
+                if (quiz?.id) {
+                    setQuizHandler(quiz);
+                }
+
+                if (update) {
+                    updateQuestionHandler(question, id, () => navigate(-1));
+                } else {
+                    setQuestionHandler(question);
+                }
+
                 resetFrom();
             };
             if (quizTitle) {
                 const quiz = {
                     id: genUniqId(),
                     title: quizTitle,
+                    layout,
                 };
                 doSave(quiz, 1);
             } else {
@@ -146,7 +163,11 @@ export default function CreateQuizForm({ update }) {
      * Setting form submit button status based on form required fields.
      */
     useEffect(() => {
-        if ((update || (quizTitle || quizId)) && questionTitle && options.length > 1) {
+        if (
+            (update || quizTitle || quizId) &&
+            questionTitle &&
+            options.length > 1
+        ) {
             if (Array.isArray(correctOption) && correctOption.length) {
                 setIsFormValid(true);
             } else if (!Array.isArray(correctOption) && correctOption) {
@@ -162,7 +183,8 @@ export default function CreateQuizForm({ update }) {
     useEffect(() => {
         if (id && update) {
             getQuestionById(id, (value) => {
-                const { correctOption, options, rewardPoint, title, isMultiChoice } = value;
+                const { correctOption, options, rewardPoint, title, isMultiChoice } =
+                    value;
                 setCorrectOption(correctOption);
                 setRewardPoint(rewardPoint);
                 setQuestionTitle(title);
@@ -187,7 +209,7 @@ export default function CreateQuizForm({ update }) {
             {/* Quiz Title section */}
             {!update && (
                 <div className="d-flex justify-content-between">
-                    <div className="w-50">
+                    <div className="w-100">
                         <FormGroup>
                             <Label htmlFor="quizTitle">Quiz title *</Label>
                             <Input
@@ -204,10 +226,9 @@ export default function CreateQuizForm({ update }) {
                         </FormGroup>
                     </div>
 
-                    <span className="mx-2">or</span>
-                    <div className="w-50">
+                    <div className="w-100 mx-2">
                         <FormGroup>
-                            <Label htmlFor="quizList">Select from existing</Label>
+                            <Label htmlFor="quizList">or Select from existing</Label>
 
                             <Select
                                 options={quizList}
@@ -215,6 +236,23 @@ export default function CreateQuizForm({ update }) {
                                 valueField="id"
                                 disabled={quizList.length <= 0}
                                 onChange={onExistingQuizSelect}
+                            />
+                        </FormGroup>
+                    </div>
+                    <div className="w-50">
+                        <FormGroup>
+                            <Label htmlFor="quizList">Layout</Label>
+
+                            <Select
+                                values={[layout]}
+                                options={[
+                                    { label: "Single", value: "single" },
+                                    { label: "Multiple", value: "multiple" },
+                                ]}
+                                disabled={quizId}
+                                labelField="label"
+                                valueField="value"
+                                onChange={(value) => setLayout(value[0])}
                             />
                         </FormGroup>
                     </div>
@@ -312,7 +350,7 @@ export default function CreateQuizForm({ update }) {
                     {update ? "Update" : "Create"}
                 </Button>
             </div>
-            <MyQuizList preview />
+            {!update && <MyQuizList preview />}
         </>
     );
 }

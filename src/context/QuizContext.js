@@ -7,7 +7,8 @@ import {
     getQuestionByQuizId,
     countQuestionByQuizId,
     updateQuestionOrderByQuestionId,
-    updateQuestionById
+    updateQuestionById,
+    getQuizLayoutById
 } from "../DB/useQuizIDB";
 
 // Create two context:
@@ -22,20 +23,24 @@ function QuizProvider({ children }) {
     const [quizList, setQuizList] = useState([]);
     const [questionList, setQuestionList] = useState([]);
 
-    const setQuizHandler = (question, quiz, updateId, cb) => {
-        if (quiz) {
-            setQuizList([quiz, ...quizList]);
-            setQuiz(quiz, cb);
-        }
-        if (updateId) {
-            updateQuestionById(question, updateId, cb);
-        } else {
-            setQuestion(question, updateId, cb);
-        }
+    const setQuizHandler = (quiz, cb) => {
+        setQuizList([quiz, ...quizList]);
+        setQuiz(quiz, cb);
+    };
+
+    const setQuestionHandler = (question, cb) => {
+        setQuestion(question, cb);
+    };
+    const updateQuestionHandler = (question, id, cb) => {
+        updateQuestionById(question, id, cb);
     };
 
     const getQuestionByQuiz = (quizId) => {
         getQuestionByQuizId(quizId, setQuestionList);
+    };
+
+    const getQuizLayoutByIdHandler = (id, cb) => {
+        getQuizLayoutById(id, cb);
     };
 
     useEffect(() => {
@@ -47,10 +52,13 @@ function QuizProvider({ children }) {
             <QuizDispatchContext.Provider
                 value={{
                     setQuizHandler,
+                    setQuestionHandler,
+                    updateQuestionHandler,
                     getQuestionByQuiz,
                     countQuestionByQuizId,
                     updateQuestionOrderByQuestionId,
                     getQuestionById,
+                    getQuizLayoutByIdHandler
                 }}
             >
                 {children}
